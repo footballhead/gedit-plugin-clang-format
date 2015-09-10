@@ -1,5 +1,8 @@
 from gi.repository import GObject, Gtk, Gedit, Gdk
 from subprocess import Popen, PIPE
+import random
+import string
+import json
 
 class ClangFormatPlugin(GObject.Object, Gedit.WindowActivatable):
     __gtype_name__ = "ClangFormatPlugin"
@@ -39,13 +42,22 @@ class ClangFormatPlugin(GObject.Object, Gedit.WindowActivatable):
         
         lang = doc.get_language() 
         if lang.get_name() in ("C", "C++", "C/C++/ObjC Header"):
+
             doc_text = doc.get_text(doc.get_start_iter(), doc.get_end_iter(),include_hidden_chars=True)
-            enc_input = doc_text.encode('utf-8')
-            p = Popen(['clang-format'], stdout=PIPE, stdin=PIPE)
-            output = p.communicate(input=enc_input)[0]
             
-            #begin single user action, as otherwise removing the old text and 
-            #inserting the new text are counted as two separate undo actions
+            pos = doc.props.cursor_position
+            
+            enc_input = doc_text.encode('utf-8')
+            p = Popen(['clang-format', '-cursor=%d' % (pos)], stdout=PIPE, stdin=PIPE)
+            output = p.communicate(input=enc_input)[0].decode('utf-8')
+            
+            #get new cursor position
+            (cursor_str,formatted_text) = output.split('\n', 1)
+            pos =  json.loads(cursor_str)['Cursor']
+
+            #begin single user action
             doc.begin_user_action()
-            doc.set_text(output.decode('utf-8'))
+            doc.set_text(formatted_text)
+            cursor_iter = doc.get_iter_at_offset(pos)
+            doc.place_cursor(cursor_iter)
             doc.end_user_action()
