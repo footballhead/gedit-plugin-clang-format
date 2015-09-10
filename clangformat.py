@@ -33,15 +33,19 @@ class ClangFormatPlugin(GObject.Object, Gedit.WindowActivatable):
     #formats the current document's text using clang-format
     def format_document(self):
         doc = self.window.get_active_document()
-        lang = doc.get_language() 
-
+        
         if not doc:
             return
-
+        
+        lang = doc.get_language() 
         if lang.get_name() in ("C", "C++", "C/C++/ObjC Header"):
-            print("C File detected:")
             doc_text = doc.get_text(doc.get_start_iter(), doc.get_end_iter(),include_hidden_chars=True)
             enc_input = doc_text.encode('utf-8')
             p = Popen(['clang-format'], stdout=PIPE, stdin=PIPE)
             output = p.communicate(input=enc_input)[0]
+            
+            #begin single user action, as otherwise removing the old text and 
+            #inserting the new text are counted as two separate undo actions
+            doc.begin_user_action()
             doc.set_text(output.decode('utf-8'))
+            doc.end_user_action()
