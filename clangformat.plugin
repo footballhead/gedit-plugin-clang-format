@@ -1,0 +1,8 @@
+[Plugin]
+Loader=python3
+Module=clangformat
+IAge=3
+Name=clang-format plugin
+Description=A plugin which formats C/C++ code using clang-format
+Authors=Jan Tlatlik <jtlatlik@techfak.uni-bielefeld.de>
+Copyright=Copyright © 2015 Jan Tlatlik <jtlatlik@techfak.uni-bielefeld.de>
