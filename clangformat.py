@@ -3,6 +3,7 @@ from subprocess import Popen, PIPE
 import random
 import string
 import json
+import os.path
 
 class ClangFormatPlugin(GObject.Object, Gedit.WindowActivatable):
     __gtype_name__ = "ClangFormatPlugin"
@@ -48,7 +49,10 @@ class ClangFormatPlugin(GObject.Object, Gedit.WindowActivatable):
             pos = doc.props.cursor_position
             
             enc_input = doc_text.encode('utf-8')
-            p = Popen(['clang-format', '-cursor=%d' % (pos)], stdout=PIPE, stdin=PIPE)
+            doc_path = doc.get_location().get_path()
+            popen_cwd = os.path.split(doc_path)[0]
+            p = Popen(['clang-format', '-style=file', '-cursor=%d' % (pos)],
+                      stdout=PIPE, stdin=PIPE, cwd=popen_cwd)
             output = p.communicate(input=enc_input)[0].decode('utf-8')
             
             #get new cursor position
