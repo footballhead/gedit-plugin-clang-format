@@ -42,7 +42,7 @@ class ClangFormatPlugin(GObject.Object, Gedit.WindowActivatable):
             return
         
         lang = doc.get_language() 
-        if lang.get_name() in ("C", "C++", "C/C++/ObjC Header"):
+        if lang.get_name() in ("C", "C++", "C/C++/ObjC Header", "C/ObjC Header", "C++ Header"):
 
             doc_text = doc.get_text(doc.get_start_iter(), doc.get_end_iter(),include_hidden_chars=True)
             
